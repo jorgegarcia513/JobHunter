@@ -2,6 +2,9 @@ package JobHunterGame;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.IOException;
 
 /**
  * Builder is used to construct the actually story. This creates the StoryTree data structure
@@ -12,11 +15,13 @@ public class Builder {
     boolean finished;
     ArrayList<Choice> choiceWorkList;
     ArrayList<StoryNode> storyWorkList;
+    int index;
 
     public Builder() {
         this.finished = false;
         this.choiceWorkList = new ArrayList<Choice>();
         this.storyWorkList = new ArrayList<StoryNode>();
+        this.index = 0;
     }
 
     /**
@@ -24,19 +29,32 @@ public class Builder {
      * Uses an ArrayList as a stack to process all possible choices and outcomes.
      * @return StoryTree
      */
-    public StoryTree buildStory() {
+    public StoryTree buildStory() throws IOException {
+        FileWriter write = new FileWriter("/Users/jorgegarcia/Documents/GameStories/JobHunter.txt" , true);
+        PrintWriter printLine = new PrintWriter( write );
+        String text;
+
         Scanner reader = new Scanner(System.in);
         System.out.println("Select your intro text");
-        current = new StoryNode(reader.next());
+        text = reader.next();
+        current = new StoryNode(text);
+        printLine.println("#0" + text);
 
         System.out.println("First choice text: ");
-        Choice choice1 = new Choice(reader.next());
+        text = reader.next();
+        Choice choice1 = new Choice(text);
+        printLine.println("#1" + text);
         choiceWorkList.add(choice1);
 
         System.out.println("Second choice text: ");
-        Choice choice2 = new Choice(reader.next());
+        text = reader.next();
+        Choice choice2 = new Choice(text);
+        printLine.printf("#2" + text);
+        printLine.close();
+
         current.option1 = choice1;
         current.option2 = choice2;
+
         choiceWorkList.add(choice2);
         storyWorkList.add(current);
 

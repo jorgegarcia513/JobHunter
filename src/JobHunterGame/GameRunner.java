@@ -1,12 +1,14 @@
 package JobHunterGame;
 
+import java.io.IOException;
+
 /**
  * Main class used to run the game
  * @author Jorge Garcia
  */
 public class GameRunner {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Builder build = new Builder();
         boolean gameOver = false;
 
