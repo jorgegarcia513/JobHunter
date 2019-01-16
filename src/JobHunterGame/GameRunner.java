@@ -12,7 +12,7 @@ public class GameRunner {
         Builder build = new Builder();
         boolean gameOver = false;
 
-        StoryTree mainStory = build.buildStory();
+        StoryTree mainStory = build.initialNode;
 
         // Check to see if the player has reached an ending, if so set gameOver variable to true.
         while(!gameOver) {

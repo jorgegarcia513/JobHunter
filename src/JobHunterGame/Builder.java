@@ -1,95 +1,105 @@
 package JobHunterGame;
 
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
 
 /**
- * Builder is used to construct the actually story. This creates the StoryTree data structure
+ * Builder is used to construct the actually story. This creates the StoryTree data structure imported
+ * from a text file.
+ *
+ * The text file must be in the following format
+ *
+ * 1# Intro Text
+ * 11 Choice 1
+ * 12 Choice 2
+ * 11# Text for Outcome of Choice 1
+ * 111 Choice 1
+ * 112 Choice 2
+ * 12# Text for Outcome of Choice 2
+ *
+ * That structure is then linked together and stored in the initialNode variable.
  * @author Jorge Garcia
  */
 public class Builder {
     StoryNode current;
-    boolean finished;
+    public StoryTree initialNode;
     ArrayList<Choice> choiceWorkList;
-    ArrayList<StoryNode> storyWorkList;
-    int index;
+    ArrayList<String> storyTreeKeys;
+    private final File f;
+    private final Scanner fileReader;
+    HashMap<String, StoryTree> stories;
+    HashMap<String, Choice> choices;
 
-    public Builder() {
-        this.finished = false;
+    public Builder() throws FileNotFoundException {
         this.choiceWorkList = new ArrayList<Choice>();
-        this.storyWorkList = new ArrayList<StoryNode>();
-        this.index = 0;
+        this.storyTreeKeys = new ArrayList<String>();
+        this.f = new File("/Users/jorgegarcia/Documents/GameStories/JobHunter.txt");
+        this.fileReader = new Scanner(this.f);
+        this.stories = new HashMap<String, StoryTree>();
+        this.choices = new HashMap<String, Choice>();
+        this.genStoryTree();
     }
 
     /**
-     * Main method run to build a story.
-     * Uses an ArrayList as a stack to process all possible choices and outcomes.
-     * @return StoryTree
+     * Using the Scanner object this reads through each line of the text file,
+     * identifying if the line represents a StoryNode, Choice, or Ending, and then
+     * puts each into a HashMap with it's corresponded identifier.
      */
-    public StoryTree buildStory() throws IOException {
-        FileWriter write = new FileWriter("/Users/jorgegarcia/Documents/GameStories/JobHunter.txt" , true);
-        PrintWriter printLine = new PrintWriter( write );
-        String text;
+    private void importStory() {
+        int index;
+        String line;
+        
+        while(fileReader.hasNextLine()) {
+            line = fileReader.nextLine();
+            if (line.contains("#")) {
+                index = line.indexOf('#');
 
-        Scanner reader = new Scanner(System.in);
-        System.out.println("Select your intro text");
-        text = reader.next();
-        current = new StoryNode(text);
-        printLine.println("#0" + text);
+                current = new StoryNode(line.substring(index + 2));
+                stories.put(line.substring(0, index), current);
+                this.storyTreeKeys.add(line.substring(0, index));
+                line = fileReader.nextLine();
 
-        System.out.println("First choice text: ");
-        text = reader.next();
-        Choice choice1 = new Choice(text);
-        printLine.println("#1" + text);
-        choiceWorkList.add(choice1);
+                index = line.indexOf('$');
+                Choice choice1 = new Choice(line.substring(index + 2));
+                this.choices.put(line.substring(0, index), choice1);
+                line = fileReader.nextLine();
 
-        System.out.println("Second choice text: ");
-        text = reader.next();
-        Choice choice2 = new Choice(text);
-        printLine.printf("#2" + text);
-        printLine.close();
+                Choice choice2 = new Choice(line.substring(index + 2));
+                choices.put(line.substring(0, index), choice2);
 
-        current.option1 = choice1;
-        current.option2 = choice2;
+                this.current.option1 = choice1;
+                this.current.option2 = choice2;
 
-        choiceWorkList.add(choice2);
-        storyWorkList.add(current);
-
-        // Run this over and over again until every possible branch of the story has an ending
-        while(choiceWorkList.size() > 0) {
-            Choice currentChoice = choiceWorkList.get(choiceWorkList.size() - 1);
-            choiceWorkList.remove(currentChoice);
-
-            System.out.println("Current Choice: " + currentChoice.text);
-            System.out.println("Is this an ending? (Y or N)");
-            String ending = reader.next();
-
-            if(ending.toLowerCase().equals("y")) {
-                System.out.println("Select ending text for \"" + currentChoice.text +"\"");
-                currentChoice.outcome = new Ending(reader.next());
-            }
-            else {
-                System.out.println("Outcome text for \"" + currentChoice.text +"\": ");
-                current = new StoryNode(reader.next());
-                currentChoice.outcome = current;
-
-                System.out.println("First choice text: ");
-                String firstChoiceText = reader.next();
-                choice1 = new Choice(firstChoiceText);
-                choiceWorkList.add(choice1);
-
-                System.out.println("Second choice text: ");
-                String secChoiceText = reader.next();
-                choice1 = new Choice(secChoiceText);
-                choiceWorkList.add(choice2);
-
-                current.option1 = choice1;
-                current.option2 = choice2;
+            } else {
+                index = line.indexOf('@');
+                Ending ending = new Ending(line.substring(index + 2));
+                this.stories.put(line.substring(0, index), ending);
+                this.storyTreeKeys.add(line.substring(0, index));
             }
         }
-        return this.current;
+    }
+
+    /**
+     * Using the newly generated story tree from the text file, this goes through the Choices HashMap
+     * and links choices to their outcomes.
+     */
+    private void genStoryTree() {
+        this.importStory();;
+        Iterator choicesIter = choices.entrySet().iterator();
+        while(choicesIter.hasNext()) {
+            Map.Entry currentEntry = (Map.Entry) choicesIter.next();
+            Choice currentChoice = (Choice) currentEntry.getValue();
+            String id = (String) currentEntry.getKey();
+
+            for(String treeId : this.storyTreeKeys) {
+                if(treeId.equals("1")) {
+                    this.initialNode = this. stories.get("1");
+                }
+
+                if(id.equals(treeId)) {
+                    currentChoice.outcome = this.stories.get(treeId);
+                }
+            }
+        }
     }
 }
