@@ -5,6 +5,13 @@ Text-based choose your own adventure game revolving around someone looking for a
 # How it works
 
 # Changelog
+* ## Version 0.2.1
+* Current method for reading a story from a text file and creating our data structure isn't good enough.
+* Bugs so far:
+  * Every path must have an ending or else we get a NullPointedException
+  * Choices cannot lead to the same story node or else it messed up the order of stories
+* Improvements to be made:
+  * New way of formatting the text file and reading data
 
 * ## Version 0.2
 * Came up with a new format for reading from a text file.
